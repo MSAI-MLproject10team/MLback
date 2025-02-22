@@ -9,22 +9,14 @@ from sklearn.cluster import MeanShift, estimate_bandwidth
 
 
 
+
 ## Custom Vision 결과 확인
 # 임계값 설정
 THRESHOLD = 0.8  # 80% 이상 확률만 표시
 
-#이미지 경로
-#image_file = f"data/musinsa_images_pants_ver2/pants_313.jpg"
-def detect_objects(image_file: str):
-
-    print(f"Processing image: {image_file}")
-    image_file = cv2.imread(image_file)
-
-    if image_file is None:
-        raise ValueError(f"이미지를 불러올 수 없습니다: {image_file}")
-    
 
 
+def process_images(image_path):
 
     # 카테고리별 색상 저장용 딕셔너리
     category_colors = defaultdict(lambda: (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
@@ -84,9 +76,9 @@ def detect_objects(image_file: str):
 
     # 실행 예시
 
-    detections = detect_objects(image_file)
+    detections = detect_objects(image_path)
     if detections:
-        visualize_detections(image_file, detections)
+        visualize_detections(image_path, detections)
 
 
     ## 필요한 부분만 가져오기
@@ -123,7 +115,7 @@ def detect_objects(image_file: str):
         return cropped_images  # 크롭된 이미지 리스트 반환
 
     # 실행 예시
-    cropped_objects = show_cropped_objects_clean(image_file, detections)
+    cropped_objects = show_cropped_objects_clean(image_path, detections)
 
     # 반환된 이미지 확인
     # for tag, prob, img in cropped_objects:
@@ -222,7 +214,7 @@ def detect_objects(image_file: str):
             dominant_colors[tag] = (hex_code, percentage)
         
         return dominant_colors
-    
+
     for tag, prob, img in cropped_objects:
         print(f"Tag: {tag}, Probability: {prob:.2f}, Image Shape: {img.shape}")
 
@@ -235,7 +227,11 @@ def detect_objects(image_file: str):
             print(f"{tag}: {hex_code} ({percentage:.1f}%)")
         else:
             print(f"{tag}: No valid pixels found")
-    
+        
 
     return results
+
+#이미지 경로
+image_file = f"data/musinsa_images_pants_ver2/pants_313.jpg"
+show = process_images(image_file)
 
