@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import shutil
 import os
@@ -14,6 +14,10 @@ if not os.path.exists(UPLOAD_DIRECTORY):
 
 app.mount("/images", StaticFiles(directory=UPLOAD_DIRECTORY), name="images")
 
+@app.get("/")
+async def root():
+    return HTMLResponse(content="<h1>Hello World</h1><p>Welcome to the Image Analysis API</p>")
+
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
     try:
@@ -22,12 +26,12 @@ async def upload_image(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # 2. fin2.py를 사용하여 이미지 분석
+        # 2. fin2.py의 process_images 함수를 사용하여 이미지 분석
         analysis_result = process_images(file_path)
 
         # 3. colclass.py를 사용하여 퍼스널 컬러 분류
         result = {}
-        for category, (hex_code, probability) in analysis_result.items():
+        for category, (hex_code, percentage) in analysis_result.items():
             color_classifier = ColorClassifierApp(None)
             personal_color = color_classifier.classify_personal_color(hex_code)
             rgb = color_classifier.hex_to_rgb(hex_code)
@@ -43,7 +47,7 @@ async def upload_image(file: UploadFile = File(...)):
                         "v": round(hsv[2], 1)
                     }
                 },
-                "probability": float(probability),
+                "percentage": float(percentage),
                 "personal_color": personal_color
             }
 
