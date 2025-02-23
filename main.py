@@ -29,18 +29,18 @@ async def upload_image(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # # 2. fin2.py의 process_images 함수를 사용하여 이미지 분석
-    analysis_result = process_images(file_path)
-    print(analysis_result)
-    return JSONResponse(content=analysis_result)
+    # # # 2. fin2.py의 process_images 함수를 사용하여 이미지 분석
+    # analysis_result = process_images(file_path)
+    # print(analysis_result)
+    # return JSONResponse(content=analysis_result)
 
-    # try:
-    #     analysis_result = process_images(file_path)
-    #     print(analysis_result)
-    #     analysis_result_json= JSONResponse(content=analysis_result)
-        # return JSONResponse(content=analysis_result)
-    # except Exception as e:
-    #     raise HTTPException(status_code=500, detail=str(e))
+    try:
+        analysis_result = process_images(file_path)
+        print(analysis_result)
+        analysis_result_json= JSONResponse(content=analysis_result)
+        return analysis_result_json
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
