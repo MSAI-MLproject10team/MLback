@@ -31,46 +31,65 @@ def get_personal_color(hex_colors: Dict[str, str]) -> Dict[str, str]:
         try:
             rgb = hex_to_rgb(hex_color)
             h, s, v = rgb_to_hsv(rgb)
-
-            # Spring colors (20° ~ 80°)
-            if 20 <= h <= 80:
-                if v >= 75 and s >= 60:
-                    personal_color = "Bright Spring"
-                elif v >= 70 and s < 50:
-                    personal_color = "Light Spring"
+            
+            # Base season determination
+            if 315 <= h or h < 45:  # Red to Yellow
+                if v > 70 and s > 50:
+                    season = "Spring"
                 else:
+                    season = "Autumn"
+            elif 45 <= h < 165:  # Yellow-Green to Green
+                if v > 70:
+                    season = "Spring"
+                else:
+                    season = "Autumn"
+            elif 165 <= h < 255:  # Blue-Green to Blue
+                if v > 70:
+                    season = "Summer"
+                else:
+                    season = "Winter"
+            else:  # 255-315: Purple to Magenta
+                if v > 70 and s < 50:
+                    season = "Summer"
+                else:
+                    season = "Winter"
+            
+            # Detailed classification
+            if season == "Spring":
+                if v > 85 and s < 60:
+                    personal_color = "Light Spring"
+                elif 60 <= s <= 85:
                     personal_color = "True Spring"
-
-            # Summer colors (180° ~ 260°)
-            elif 180 <= h <= 260:
-                if v >= 70 and 30 <= s <= 50:
+                else:
+                    personal_color = "Bright Spring"
+            
+            elif season == "Summer":
+                if v > 85 and s < 50:
                     personal_color = "Light Summer"
-                elif v >= 50:
+                elif 50 <= s <= 70:
                     personal_color = "True Summer"
                 else:
                     personal_color = "Soft Summer"
-
-            # Autumn colors (80° ~ 180°)
-            elif 80 <= h <= 180:
-                if v <= 50 and s >= 50:
-                    personal_color = "Deep Autumn"
-                elif v <= 65 and s >= 40:
+            
+            elif season == "Autumn":
+                if s < 50 and v > 60:
+                    personal_color = "Soft Autumn"
+                elif 50 <= s <= 80:
                     personal_color = "True Autumn"
                 else:
-                    personal_color = "Soft Autumn"
-
-            # Winter colors (260° ~ 360°)
-            else:
-                if v <= 50 and s >= 40:
+                    personal_color = "Dark Autumn"
+            
+            else:  # Winter
+                if v < 50 and s > 50:
                     personal_color = "Dark Winter"
-                elif v >= 70 and s >= 60:
-                    personal_color = "Bright Winter"
-                else:
+                elif 50 <= s <= 80:
                     personal_color = "True Winter"
-
+                else:
+                    personal_color = "Bright Winter"
+            
             results[item_type] = personal_color
-
+            
         except ValueError as e:
             results[item_type] = f"Error: Invalid color code - {str(e)}"
-
+    
     return results
