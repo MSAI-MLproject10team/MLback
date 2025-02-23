@@ -1,34 +1,61 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import shutil
-import uvicorn
-#from finalmodel import detect_objects, visualize_detections, show_cropped_objects_clean, remove_background, get_most_dominant_color
-from fin2 import process_images
 import os
+from fin2 import analyze_image
+from colclass import ColorClassifierApp
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message":"Hello, World"}
+UPLOAD_DIRECTORY = "uploaded_images"
+if not os.path.exists(UPLOAD_DIRECTORY):
+    os.makedirs(UPLOAD_DIRECTORY)
 
+app.mount("/images", StaticFiles(directory=UPLOAD_DIRECTORY), name="images")
 
-# 이미지 업로드 엔드포인트
-UPLOAD_DIR = "uploaded_images"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-@app.post("/upload/")
+@app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
-    if file.content_type not in ["image/jpeg", "image/png"]:
-        return {"error": "Invalid file type. Only JPEG and PNG are allowed."}
+    try:
+        # 1. 이미지 업로드
+        file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
 
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    return {"filename": file.filename, "image_path": file_path}
+        # 2. fin2.py를 사용하여 이미지 분석
+        analysis_result = analyze_image(file_path)
 
+        # 3. colclass.py를 사용하여 퍼스널 컬러 분류
+        result = {}
+        for category, (hex_code, probability) in analysis_result.items():
+            color_classifier = ColorClassifierApp(None)
+            personal_color = color_classifier.classify_personal_color(hex_code)
+            rgb = color_classifier.hex_to_rgb(hex_code)
+            hsv = color_classifier.rgb_to_hsv(rgb)
 
+            result[category] = {
+                "color": {
+                    "hex_code": hex_code,
+                    "rgb": rgb,
+                    "hsv": {
+                        "h": round(hsv[0], 1),
+                        "s": round(hsv[1], 1),
+                        "v": round(hsv[2], 1)
+                    }
+                },
+                "probability": float(probability),
+                "personal_color": personal_color
+            }
+
+        # 이미지 URL 추가
+        image_url = f"/images/{file.filename}"
+        result["image_url"] = image_url
+
+        return JSONResponse(content=result)
+
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

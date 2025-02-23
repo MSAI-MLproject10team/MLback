@@ -7,7 +7,10 @@ import random
 from collections import defaultdict
 from sklearn.cluster import MeanShift, estimate_bandwidth
 
-
+prediction_endpoint = "https://chillchill-prediction.cognitiveservices.azure.com"
+prediction_key = "51U32IRMi4rdmNqwvaX4IFoKpHS6gJTReP4YtA1Riwz5HwMbt1bMJQQJ99BBACHYHv6XJ3w3AAAIACOGpfOe"
+project_id = "9dcf7743-0e90-409f-beeb-35da8ae023aa"
+model_name = "Iteration8"
 
 
 ## Custom Vision 결과 확인
@@ -215,18 +218,18 @@ def process_images(image_path):
         
         return dominant_colors
 
-    for tag, prob, img in cropped_objects:
-        print(f"Tag: {tag}, Probability: {prob:.2f}, Image Shape: {img.shape}")
+    # for tag, prob, img in cropped_objects:
+    #     print(f"Tag: {tag}, Probability: {prob:.2f}, Image Shape: {img.shape}")
 
 
     # 실행 방법
     results = get_most_dominant_color(final_results)
-    for tag, color_info in results.items():
-        if color_info:
-            hex_code, percentage = color_info
-            print(f"{tag}: {hex_code} ({percentage:.1f}%)")
-        else:
-            print(f"{tag}: No valid pixels found")
+    # for tag, color_info in results.items():
+    #     if color_info:
+    #         hex_code, percentage = color_info
+    #         print(f"{tag}: {hex_code} ({percentage:.1f}%)")
+    #     else:
+    #         print(f"{tag}: No valid pixels found")
         
 
     return results
@@ -234,4 +237,5 @@ def process_images(image_path):
 #이미지 경로
 image_file = f"data/musinsa_images_pants_ver2/pants_313.jpg"
 show = process_images(image_file)
+print(show)
 
