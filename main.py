@@ -1,6 +1,7 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from typing import Dict
 import shutil
 import os
 from fin2 import process_images
@@ -17,7 +18,7 @@ app.mount("/images", StaticFiles(directory=UPLOAD_DIRECTORY), name="images")
 async def root():
     return HTMLResponse(content="<h1>Hello World</h1><p>Welcome to the Image Analysis API</p>")
 
-@app.post("/upload-image/", response_model=dict[str, str])
+@app.post("/upload-image/", response_model=Dict[str, str])
 async def upload_image(file: UploadFile = File(...)):
 
     # 1. 이미지 업로드
