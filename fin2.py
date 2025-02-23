@@ -16,7 +16,7 @@ THRESHOLD = 0.8  # 80% 이상 확률만 표시
 
 
 
-def process_images(image_path):
+def process_images(image_path:str):
 
     # 카테고리별 색상 저장용 딕셔너리
     category_colors = defaultdict(lambda: (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
@@ -232,7 +232,7 @@ def process_images(image_path):
     return results
 
 #이미지 경로
-image_file = f"data/musinsa_images_pants_ver2/pants_313.jpg"
-show = process_images(image_file)
-print(show)
+# image_file = f"data/musinsa_images_pants_ver2/pants_313.jpg"
+# show = process_images(image_file)
+# print(show)
 
