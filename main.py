@@ -27,7 +27,7 @@ async def upload_image(file: UploadFile = File(...)):
 
     # # 2. fin2.py의 process_images 함수를 사용하여 이미지 분석
     analysis_result = process_images(file_path)
-    return analysis_result
+    return JSONResponse(content=analysis_result)
 
 if __name__ == "__main__":
     import uvicorn
