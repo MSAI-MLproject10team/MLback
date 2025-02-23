@@ -7,7 +7,10 @@ import random
 from collections import defaultdict
 from sklearn.cluster import MeanShift, estimate_bandwidth
 
-
+prediction_endpoint = "https://chillchill-prediction.cognitiveservices.azure.com"
+prediction_key = "51U32IRMi4rdmNqwvaX4IFoKpHS6gJTReP4YtA1Riwz5HwMbt1bMJQQJ99BBACHYHv6XJ3w3AAAIACOGpfOe"
+project_id = "9dcf7743-0e90-409f-beeb-35da8ae023aa"
+model_name = "Iteration8"
 
 
 ## Custom Vision 결과 확인
@@ -211,7 +214,8 @@ def process_images(image_path):
                 dominant_color[2]
             )
             
-            dominant_colors[tag] = (hex_code, percentage)
+            #dominant_colors[tag] = (hex_code, percentage)
+            dominant_colors[tag] = hex_code
         
         return dominant_colors
 
@@ -233,6 +237,7 @@ def process_images(image_path):
 
 #이미지 경로
 # image_file = f"data/musinsa_images_pants_ver2/pants_313.jpg"
-# show = process_images(image_file)
+# show= process_images(image_file)
 # print(show)
+# print(type(show))
 
