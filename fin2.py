@@ -16,7 +16,7 @@ THRESHOLD = 0.8  # 80% 이상 확률만 표시
 
 
 
-def process_images(image_path:str):
+def process_images(image_path):
 
     # 카테고리별 색상 저장용 딕셔너리
     category_colors = defaultdict(lambda: (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
