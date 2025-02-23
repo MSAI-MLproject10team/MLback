@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from typing import Dict
@@ -36,7 +36,7 @@ async def upload_image(file: UploadFile = File(...)):
 
         # process_images 함수에서 반환하는 값이 정확한지 확인
     try:
-        analysis_result = process_images(file_path)
+        analysis_result = JSONResponse(content=analysis_result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
