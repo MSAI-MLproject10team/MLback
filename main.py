@@ -4,9 +4,10 @@ from fastapi.staticfiles import StaticFiles
 from typing import Optional
 import shutil
 import os
+import uvicorn
 
 from fin2 import process_images
-from colclass import ColorClassifierApp
+from colclass import get_personal_color  # 수정된 import
 
 app = FastAPI()
 
@@ -23,14 +24,16 @@ async def root():
 
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
-
     if file is None:
         raise HTTPException(status_code=400, detail="No file uploaded")
     
     # 확장자 검사
     file_ext = os.path.splitext(file.filename)[1].lower()
     if file_ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=430, detail=f"Invalid file type: {file_ext}. Only PNG, JPG, JPEG are allowed.")
+        raise HTTPException(
+            status_code=430, 
+            detail=f"Invalid file type: {file_ext}. Only PNG, JPG, JPEG are allowed."
+        )
     
     # 1. 이미지 업로드
     file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
@@ -38,21 +41,18 @@ async def upload_image(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # # # 2. fin2.py의 process_images 함수를 사용하여 이미지 분석
-    # analysis_result = process_images(file_path)
-    # print(analysis_result)
-    # return JSONResponse(content=analysis_result)
-
     try:
-        analysis_result = process_images(file_path)
-        print(analysis_result)
-        analysis_result_json= JSONResponse(content=analysis_result)
-        return analysis_result_json
+        # 2. 이미지 분석하여 hex color codes 획득
+        hex_colors = process_images(file_path)
+        
+        # 3. hex color codes를 personal colors로 변환
+        personal_colors = get_personal_color(hex_colors)
+        
+        # 4. 결과 반환
+        return JSONResponse(content=personal_colors)
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

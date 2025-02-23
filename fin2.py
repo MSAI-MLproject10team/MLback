@@ -8,10 +8,7 @@ from collections import defaultdict
 from sklearn.cluster import MeanShift, estimate_bandwidth
 
 
-prediction_endpoint = "https://chillchill-prediction.cognitiveservices.azure.com"
-prediction_key = "51U32IRMi4rdmNqwvaX4IFoKpHS6gJTReP4YtA1Riwz5HwMbt1bMJQQJ99BBACHYHv6XJ3w3AAAIACOGpfOe"
-project_id = "9dcf7743-0e90-409f-beeb-35da8ae023aa"
-model_name = "Iteration8"
+
 
 ## Custom Vision 결과 확인
 # 임계값 설정
