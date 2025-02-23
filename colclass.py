@@ -32,45 +32,42 @@ def get_personal_color(hex_colors: Dict[str, str]) -> Dict[str, str]:
             rgb = hex_to_rgb(hex_color)
             h, s, v = rgb_to_hsv(rgb)
             
-            # Personal color classification based on HSV ranges
-            if 20 <= h <= 60:  # 봄/가을 계열
-                if s >= 40 and v >= 70:  # 봄 라이트
-                    personal_color = "Light Spring"
-                elif s >= 50 and 60 <= v <= 85:  # 봄 트루
+            # Spring colors (20° ~ 80°)
+            if 20 <= h <= 80:
+                if v >= 70:  # Light and Bright Spring
+                    if s < 50:
+                        personal_color = "Light Spring"
+                    else:
+                        personal_color = "Bright Spring"
+                else:  # True Spring
                     personal_color = "True Spring"
-                elif s >= 60 and v >= 75:  # 봄 브라이트
-                    personal_color = "Bright Spring"
-                elif 10 <= s <= 40 and 30 <= v <= 60:  # 가을 소프트
-                    personal_color = "Soft Autumn"
-                elif 40 <= s <= 70 and 30 <= v <= 65:  # 가을 트루
-                    personal_color = "True Autumn"
-                elif s >= 50 and 20 <= v <= 50:  # 가을 딥
-                    personal_color = "Deep Autumn"
-                else:
-                    personal_color = "Neutral"
                     
-            elif 180 <= h <= 260:  # 여름 계열
-                if 30 <= s <= 50 and v >= 70:  # 여름 라이트
+            # Summer colors (180° ~ 260°)
+            elif 180 <= h <= 260:
+                if v >= 70:  # Light Summer
                     personal_color = "Light Summer"
-                elif 20 <= s <= 50 and 50 <= v <= 80:  # 여름 트루
+                elif v >= 50:  # True Summer
                     personal_color = "True Summer"
-                elif 10 <= s <= 40 and 40 <= v <= 70:  # 여름 소프트
+                else:  # Soft Summer
                     personal_color = "Soft Summer"
-                else:
-                    personal_color = "Neutral"
                     
-            elif 260 <= h <= 350:  # 겨울 계열
-                if s >= 40 and 20 <= v <= 50:  # 겨울 다크
-                    personal_color = "Dark Winter"
-                elif s >= 50 and 50 <= v <= 80:  # 겨울 트루
-                    personal_color = "True Winter"
-                elif s >= 60 and v >= 70:  # 겨울 브라이트
-                    personal_color = "Bright Winter"
-                else:
-                    personal_color = "Neutral"
+            # Autumn colors (h <= 50 or transitional ranges)
+            elif h <= 50 or (80 < h < 180):
+                if v <= 50:  # Deep Autumn
+                    personal_color = "Deep Autumn"
+                elif s >= 40:  # True Autumn
+                    personal_color = "True Autumn"
+                else:  # Soft Autumn
+                    personal_color = "Soft Autumn"
                     
+            # Winter colors (260° ~ 350°)
             else:
-                personal_color = "Neutral"
+                if v <= 50:  # Dark Winter
+                    personal_color = "Dark Winter"
+                elif v >= 70:  # Bright Winter
+                    personal_color = "Bright Winter"
+                else:  # True Winter
+                    personal_color = "True Winter"
                 
             results[item_type] = personal_color
             
