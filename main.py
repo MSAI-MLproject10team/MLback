@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 import shutil
 import os
-from fin2 import analyze_image
+from fin2 import process_images
 from colclass import ColorClassifierApp
 
 app = FastAPI()
@@ -23,7 +23,7 @@ async def upload_image(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, buffer)
 
         # 2. fin2.py를 사용하여 이미지 분석
-        analysis_result = analyze_image(file_path)
+        analysis_result = process_images(file_path)
 
         # 3. colclass.py를 사용하여 퍼스널 컬러 분류
         result = {}
