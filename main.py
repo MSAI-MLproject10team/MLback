@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from typing import Dict
+from typing import Optional
 import shutil
 import os
 from fin2 import process_images
@@ -22,7 +22,7 @@ async def root():
 async def upload_image(file: UploadFile = File(...)):
 
     if not file:
-        raise HTTPException(status_code=422, detail="No file uploaded")
+        raise HTTPException(status_code=400, detail="No file uploaded")
     
     # 1. 이미지 업로드
     file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
