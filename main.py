@@ -21,15 +21,24 @@ async def root():
 @app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
 
+    if not file:
+        raise HTTPException(status_code=422, detail="No file uploaded")
+    
     # 1. 이미지 업로드
     file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # # 2. fin2.py의 process_images 함수를 사용하여 이미지 분석
-    analysis_result = process_images(file_path)
-    print(analysis_result)
-    return JSONResponse(content=analysis_result)
+    # # # 2. fin2.py의 process_images 함수를 사용하여 이미지 분석
+    # analysis_result = process_images(file_path)
+    # print(analysis_result)
+    # return JSONResponse(content=analysis_result)
+
+        # process_images 함수에서 반환하는 값이 정확한지 확인
+    try:
+        analysis_result = process_images(file_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
