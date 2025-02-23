@@ -18,7 +18,7 @@ app.mount("/images", StaticFiles(directory=UPLOAD_DIRECTORY), name="images")
 async def root():
     return HTMLResponse(content="<h1>Hello World</h1><p>Welcome to the Image Analysis API</p>")
 
-@app.post("/upload-image/", response_model=Dict[str, str])
+@app.post("/upload-image/")
 async def upload_image(file: UploadFile = File(...)):
 
     # 1. 이미지 업로드
@@ -28,6 +28,7 @@ async def upload_image(file: UploadFile = File(...)):
 
     # # 2. fin2.py의 process_images 함수를 사용하여 이미지 분석
     analysis_result = process_images(file_path)
+    print(analysis_result)
     return JSONResponse(content=analysis_result)
 
 if __name__ == "__main__":
