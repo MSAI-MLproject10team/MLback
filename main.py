@@ -41,6 +41,8 @@ async def upload_image(file: UploadFile = File(...)):
         return analysis_result_json
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+pass
 
 if __name__ == "__main__":
     import uvicorn
