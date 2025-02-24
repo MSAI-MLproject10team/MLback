@@ -14,9 +14,7 @@ from adjust_white_balance import adjust_white_balance
 app = FastAPI()
 
 UPLOAD_DIRECTORY = "uploaded_images"
-PROCESSED_DIRECTORY = "processed_images"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
-os.makedirs(PROCESSED_DIRECTORY, exist_ok=True)
 
 app.mount("/images", StaticFiles(directory=UPLOAD_DIRECTORY), name="images")
 
@@ -58,7 +56,6 @@ async def adjust_image():
         potential_path = os.path.join(UPLOAD_DIRECTORY, f"{file_id}{ext}")
         if os.path.exists(potential_path):  # 해당 파일이 존재하면
             file_path = potential_path
-            output_path = os.path.join(PROCESSED_DIRECTORY, f"{file_id}{ext}")
             break
 
     if not file_path:
@@ -66,7 +63,7 @@ async def adjust_image():
 
     # 색감 보정 로직 처리 (여기서 adjust_white_balance 함수 적용)
     try:
-        adjusted_path = adjust_white_balance(file_path, output_path)  # 실제 화이트 밸런스 보정 함수 호출
+        adjusted_path = adjust_white_balance(file_path)  # 실제 화이트 밸런스 보정 함수 호출
         media_type = get_media_type(adjusted_path)  # 확장자에 맞는 MIME 타입을 설정
         return FileResponse(adjusted_path, media_type=media_type)
     except Exception as e:
@@ -82,7 +79,7 @@ async def extract_color():
 
     # 확장자에 맞는 파일 찾기
     for ext in ALLOWED_EXTENSIONS:
-        potential_path = os.path.join(PROCESSED_DIRECTORY, f"{file_id}{ext}")
+        potential_path = os.path.join(UPLOAD_DIRECTORY, f"{file_id}{ext}")
         if os.path.exists(potential_path):  # 해당 파일이 존재하면
             file_path = potential_path
             break
