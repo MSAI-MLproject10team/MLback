@@ -6,8 +6,8 @@ import shutil
 import os
 import uvicorn
 
-from new_fin2 import process_images
-from origin_files.colclass import get_personal_color  # 수정된 import
+from fin2 import process_images
+from colclass import get_personal_color  # 수정된 import
 from upload_image import upload_new_image
 from adjust_white_balance import adjust_white_balance
 
