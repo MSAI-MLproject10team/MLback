@@ -7,7 +7,7 @@ import os
 import uvicorn
 
 from fin2 import process_images
-from colclass import get_personal_color  # 수정된 import
+from colclass import get_personal_color 
 from upload_image import upload_new_image
 from adjust_white_balance import adjust_white_balance
 
@@ -31,7 +31,6 @@ def get_media_type(file_path: str) -> str:
     else:
         return "application/octet-stream"  # 기본값, 필요한 경우 추가 설정 가능
 
-
 @app.get("/")
 async def root():
     return HTMLResponse(content="<h1>Hello World</h1><p>Welcome to the Image Analysis API</p>")
@@ -40,46 +39,56 @@ async def root():
 async def upload_image(file: UploadFile = File(...)):
     """이미지를 서버에 업로드하고 파일명을 반환"""
     # 1. 이미지 업로드
-    file_name = upload_new_image(file, UPLOAD_DIRECTORY)
-    return {"filename": file_name}
+    file_path, unique_id = upload_new_image(file, UPLOAD_DIRECTORY)
+    # 업로드된 파일 ID 반환
+    return JSONResponse(content={"id": unique_id})
     
 
-@app.get("/adjust-image/{filename}")
-async def adjust_image(filename: str):
-    """서버에 저장된 이미지를 보정"""
-    original_path = os.path.join(UPLOAD_DIRECTORY, filename)
-    if not os.path.exists(original_path):
-        raise HTTPException(status_code=404, detail="파일이 존재하지 않습니다.")
+@app.post("/adjust-image/{file_id}")
+async def adjust_image(file_id: str):
+    # 고유 ID를 기준으로 이미지 파일 찾기
+    file_path = None
 
+    # 확장자에 맞는 파일 찾기
+    for ext in ALLOWED_EXTENSIONS:
+        potential_path = os.path.join(UPLOAD_DIRECTORY, f"{file_id}{ext}")
+        if os.path.exists(potential_path):  # 해당 파일이 존재하면
+            file_path = potential_path
+            break
+
+    if not file_path:
+        raise HTTPException(status_code=404, detail="Image file not found")
+
+    # 색감 보정 로직 처리 (여기서 adjust_white_balance 함수 적용)
     try:
-        adjusted_path = os.path.join(PROCESSED_DIRECTORY, f"adjusted_{filename}")
-        # 2. 화이트 밸런스 맞추기
-        adjust_white_balance(original_path, adjusted_path)
-        # 미디어 타입 동적으로 지정 # 지정하는 것이 더 명확하고 효율적인 동작이 가능
-        media_type = get_media_type(adjusted_path)
+        adjusted_path = adjust_white_balance(file_path)  # 실제 화이트 밸런스 보정 함수 호출
+        media_type = get_media_type(adjusted_path)  # 확장자에 맞는 MIME 타입을 설정
         return FileResponse(adjusted_path, media_type=media_type)
-    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/extract-color/{filename}")
-async def extract_color(filename: str):
-    """보정된 이미지에서 색상 추출"""
-    adjusted_path = os.path.join(PROCESSED_DIRECTORY, f"adjusted_{filename}")
-    if not os.path.exists(adjusted_path):
-        raise HTTPException(status_code=404, detail="보정된 이미지가 존재하지 않습니다.")
 
+@app.get("/extract-color/{file_id}")
+async def extract_color(file_id: str):
+    # 고유 ID를 기준으로 이미지 파일 찾기
+    file_path = None
+
+    # 확장자에 맞는 파일 찾기
+    for ext in ALLOWED_EXTENSIONS:
+        potential_path = os.path.join(UPLOAD_DIRECTORY, f"{file_id}{ext}")
+        if os.path.exists(potential_path):  # 해당 파일이 존재하면
+            file_path = potential_path
+            break
+
+    if not file_path:
+        raise HTTPException(status_code=404, detail="Image file not found")
+
+    # 색깔 추출 로직 처리 (여기서 process_images 함수 적용)
     try:
-        # 2. 이미지 분석하여 hex color codes 획득
-        hex_colors = process_images(adjusted_path)
-        
-        # 3. hex color codes를 personal colors로 변환
-        personal_colors = get_personal_color(hex_colors)
-        
-        # 4. 결과 반환
+        hex_colors = process_images(file_path)  # 실제 색상 추출 함수 호출
+        personal_colors = get_personal_color(hex_colors)  # 색상 변환 함수 호출
         return JSONResponse(content=personal_colors)
-    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
