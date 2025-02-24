@@ -22,6 +22,8 @@ app.mount("/images", StaticFiles(directory=UPLOAD_DIRECTORY), name="images")
 
 ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg"}  # 허용할 이미지 확장자
 
+app.state.new_image_id = ""  # 전역 변수 대신 FastAPI state 사용
+
 def get_media_type(file_path: str) -> str:
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".png":
@@ -40,12 +42,14 @@ async def upload_image(file: UploadFile = File(...)):
     """이미지를 서버에 업로드하고 파일명을 반환"""
     # 1. 이미지 업로드
     file_path, unique_id = upload_new_image(file, UPLOAD_DIRECTORY)
+    app.state.new_image_id = unique_id  # FastAPI state에 저장
     # 업로드된 파일 ID 반환
     return JSONResponse(content={"id": unique_id})
     
 
-@app.post("/adjust-image/{file_id}")
-async def adjust_image(file_id: str):
+@app.post("/adjust-image/")
+async def adjust_image():
+    file_id = app.state.new_image_id
     # 고유 ID를 기준으로 이미지 파일 찾기
     file_path = None
 
@@ -70,8 +74,9 @@ async def adjust_image(file_id: str):
 
 
 
-@app.get("/extract-color/{file_id}")
-async def extract_color(file_id: str):
+@app.get("/extract-color/")
+async def extract_color():
+    file_id = app.state.new_image_id
     # 고유 ID를 기준으로 이미지 파일 찾기
     file_path = None
 
