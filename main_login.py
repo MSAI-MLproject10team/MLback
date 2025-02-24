@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import mysql.connector
+import uvicorn
 from mysql.connector import Error
 import bcrypt
 from contextlib import asynccontextmanager
@@ -149,3 +150,6 @@ async def register(user_data: UserRegistration):
 @app.get("/")
 async def read_root():
     return {"status": "Server is running"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=15000)
