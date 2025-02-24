@@ -45,3 +45,5 @@ def adjust_white_balance(image_path, output_path):
     # 결과 저장
     # cv2.imwrite(image_path, cv2.cvtColor(saturated, cv2.COLOR_RGB2BGR))
     cv2.imwrite(output_path, cv2.cvtColor(saturated, cv2.COLOR_RGB2BGR))
+
+    return output_path
