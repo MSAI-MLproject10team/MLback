@@ -12,7 +12,7 @@ DB_CONFIG = {
 
 # CSV 파일 불러오기
 csv_file_path = "~/backend/clothimage_fin_final.csv"  # CSV 파일 경로 수정
-df = pd.read_csv(csv_file_path)
+df = pd.read_csv(csv_file_path, encoding='utf-8')
 
 # MySQL 연결
 conn = pymysql.connect(**DB_CONFIG)
