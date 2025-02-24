@@ -7,7 +7,7 @@ import os
 import uvicorn
 
 from fin2 import process_images
-from colclass import get_personal_color 
+from colclass import get_personal_color  # 수정된 import
 from upload_image import upload_new_image
 from adjust_white_balance import adjust_white_balance
 
@@ -54,6 +54,7 @@ async def adjust_image(file_id: str):
         potential_path = os.path.join(UPLOAD_DIRECTORY, f"{file_id}{ext}")
         if os.path.exists(potential_path):  # 해당 파일이 존재하면
             file_path = potential_path
+            output_path = os.path.join(PROCESSED_DIRECTORY, f"{file_id}{ext}")
             break
 
     if not file_path:
@@ -61,7 +62,7 @@ async def adjust_image(file_id: str):
 
     # 색감 보정 로직 처리 (여기서 adjust_white_balance 함수 적용)
     try:
-        adjusted_path = adjust_white_balance(file_path)  # 실제 화이트 밸런스 보정 함수 호출
+        adjusted_path = adjust_white_balance(file_path, output_path)  # 실제 화이트 밸런스 보정 함수 호출
         media_type = get_media_type(adjusted_path)  # 확장자에 맞는 MIME 타입을 설정
         return FileResponse(adjusted_path, media_type=media_type)
     except Exception as e:
@@ -76,7 +77,7 @@ async def extract_color(file_id: str):
 
     # 확장자에 맞는 파일 찾기
     for ext in ALLOWED_EXTENSIONS:
-        potential_path = os.path.join(UPLOAD_DIRECTORY, f"{file_id}{ext}")
+        potential_path = os.path.join(PROCESSED_DIRECTORY, f"{file_id}{ext}")
         if os.path.exists(potential_path):  # 해당 파일이 존재하면
             file_path = potential_path
             break
