@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # 화이트 밸런스 적용 함수
-def adjust_white_balance(image_path, output_path):
+def adjust_white_balance(image_path):
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # BGR → RGB 변환
     
@@ -43,7 +43,7 @@ def adjust_white_balance(image_path, output_path):
     saturated = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
     
     # 결과 저장
-    # cv2.imwrite(image_path, cv2.cvtColor(saturated, cv2.COLOR_RGB2BGR))
-    cv2.imwrite(output_path, cv2.cvtColor(saturated, cv2.COLOR_RGB2BGR))
+    cv2.imwrite(image_path, cv2.cvtColor(saturated, cv2.COLOR_RGB2BGR))
+    # cv2.imwrite(output_path, cv2.cvtColor(saturated, cv2.COLOR_RGB2BGR))
 
-    return output_path
+    return image_path
