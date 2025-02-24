@@ -5,18 +5,22 @@ from typing import Optional
 import mysql.connector
 from mysql.connector import Error
 import bcrypt
-from datetime import datetime
+from contextlib import asynccontextmanager
+from datetime import date
 
-app = FastAPI()
+# 데이터 모델 정의
+class UserLogin(BaseModel):
+    userID: str
+    password: str
 
-# CORS 미들웨어 설정
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 실제 운영환경에서는 구체적인 origin을 지정해야 합니다
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class UserRegistration(BaseModel):
+    userID: str
+    userName: str
+    userPhoneNo: int
+    password: str
+    password_confirm: str
+    personalColor: str = "None"
+    birth_date: date  # 생년월일 필드 추가
 
 # Azure MySQL 연결 설정
 DB_CONFIG = {
@@ -24,21 +28,8 @@ DB_CONFIG = {
     "user": "personalchill",
     "password": "mlproject1!",
     "database": "colorchill",
-    "ssl_ca": "~/DigiCertGlobalRootCA.pem"  # Azure MySQL SSL 인증서 경로
+    "ssl_ca": "~/DigiCertGlobalRootCA.pem"
 }
-
-# 데이터 모델 정의
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-class UserRegistration(BaseModel):
-    username: str
-    password: str
-    password_confirm: str
-    name: str
-    phone: str
-    birth_date: str
 
 def get_db_connection():
     try:
@@ -47,35 +38,43 @@ def get_db_connection():
     except Error as e:
         raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
 
-# 테이블 생성 함수
-def create_tables():
+# 테이블 스키마 수정을 위한 SQL 명령
+ALTER_TABLE_SQL = """
+ALTER TABLE users 
+ADD COLUMN birth_date DATE;
+"""
+
+def alter_table():
     connection = get_db_connection()
     cursor = connection.cursor()
-    
     try:
-        # users 테이블 생성
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) UNIQUE NOT NULL,
-                password VARCHAR(255) NOT NULL,
-                name VARCHAR(100) NOT NULL,
-                phone VARCHAR(20) NOT NULL,
-                birth_date DATE NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
+        cursor.execute(ALTER_TABLE_SQL)
         connection.commit()
     except Error as e:
-        print(f"Error creating tables: {str(e)}")
+        print(f"Note: {str(e)}")  # 이미 컬럼이 존재하는 경우 무시
     finally:
         cursor.close()
         connection.close()
 
-# 앱 시작 시 테이블 생성
-@app.on_event("startup")
-async def startup_event():
-    create_tables()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 앱 시작 시 실행
+    print("Application startup")
+    alter_table()  # 테이블 수정 실행
+    yield
+    # 앱 종료 시 실행
+    print("Application shutdown")
+
+app = FastAPI(lifespan=lifespan)
+
+# CORS 미들웨어 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 로그인 엔드포인트
 @app.post("/login")
@@ -84,21 +83,25 @@ async def login(user_data: UserLogin):
     cursor = connection.cursor(dictionary=True)
     
     try:
-        # 사용자 검색
         cursor.execute(
-            "SELECT * FROM users WHERE username = %s",
-            (user_data.username,)
+            "SELECT * FROM users WHERE userID = %s",
+            (user_data.userID,)
         )
         user = cursor.fetchone()
         
         if not user:
-            raise HTTPException(status_code=401, detail="Invalid username or password")
+            raise HTTPException(status_code=401, detail="Invalid userID or password")
         
-        # 비밀번호 검증
-        if not bcrypt.checkpw(user_data.password.encode('utf-8'), user['password'].encode('utf-8')):
-            raise HTTPException(status_code=401, detail="Invalid username or password")
+        if not bcrypt.checkpw(user_data.password.encode('utf-8'), user['userPasswordHash'].encode('utf-8')):
+            raise HTTPException(status_code=401, detail="Invalid userID or password")
         
-        return {"message": "Login successful", "user_id": user['id']}
+        return {
+            "message": "Login successful",
+            "userID": user['userID'],
+            "userName": user['userName'],
+            "personalColor": user['personalColor'],
+            "birth_date": user['birth_date'].isoformat() if user['birth_date'] else None
+        }
         
     finally:
         cursor.close()
@@ -111,27 +114,24 @@ async def register(user_data: UserRegistration):
     cursor = connection.cursor()
     
     try:
-        # 비밀번호 확인
         if user_data.password != user_data.password_confirm:
             raise HTTPException(status_code=400, detail="Passwords do not match")
         
-        # 사용자명 중복 검사
-        cursor.execute("SELECT username FROM users WHERE username = %s", (user_data.username,))
+        cursor.execute("SELECT userID FROM users WHERE userID = %s", (user_data.userID,))
         if cursor.fetchone():
-            raise HTTPException(status_code=400, detail="Username already exists")
+            raise HTTPException(status_code=400, detail="UserID already exists")
         
-        # 비밀번호 해싱
         hashed_password = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
         
-        # 사용자 정보 저장
         cursor.execute("""
-            INSERT INTO users (username, password, name, phone, birth_date)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO users (userID, userName, userPhoneNo, userPasswordHash, personalColor, birth_date)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """, (
-            user_data.username,
+            user_data.userID,
+            user_data.userName,
+            user_data.userPhoneNo,
             hashed_password.decode('utf-8'),
-            user_data.name,
-            user_data.phone,
+            user_data.personalColor,
             user_data.birth_date
         ))
         
