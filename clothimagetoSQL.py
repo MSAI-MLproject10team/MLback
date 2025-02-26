@@ -4,11 +4,11 @@ import pymysql
 
 # Azure MySQL 연결 설정
 DB_CONFIG = {
-    "host": "personalchill-server.mysql.database.azure.com",
-    "user": "personalchill",
-    "password": "mlproject1!",
-    "database": "colorchill",
-    "ssl_ca": "/home/azureuser/DigiCertGlobalRootCA.pem"  # 절대경로 사용
+    "host": "",
+    "user": "",
+    "password": "",
+    "database": "",
+    "ssl_ca": ""  # 절대경로 사용
 }
 
 # CSV 파일 경로 변환 (절대경로로 변경)
