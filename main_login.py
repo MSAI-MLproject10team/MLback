@@ -25,11 +25,11 @@ class UserRegistration(BaseModel):
 
 # Azure MySQL 연결 설정
 DB_CONFIG = {
-    "host": "personalchill-server.mysql.database.azure.com",
-    "user": "personalchill",
-    "password": "mlproject1!",
-    "database": "colorchill",
-    "ssl_ca": "~/DigiCertGlobalRootCA.pem"
+    "host": "",
+    "user": "",
+    "password": "",
+    "database": "",
+    "ssl_ca": ""
 }
 
 def get_db_connection():

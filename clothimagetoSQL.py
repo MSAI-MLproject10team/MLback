@@ -11,6 +11,7 @@ DB_CONFIG = {
     "ssl_ca": ""  # 절대경로 사용
 }
 
+
 # CSV 파일 경로 변환 (절대경로로 변경)
 csv_file_path = os.path.expanduser("~/backend/clothimage_fin_final.csv")
 
